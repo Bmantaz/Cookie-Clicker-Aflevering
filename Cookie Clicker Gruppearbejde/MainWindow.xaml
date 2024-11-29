@@ -11,7 +11,7 @@
                 BorderThickness="0"
                 Background="Transparent"
                 Cursor="Hand">
-            <Image Source="E:\SKOLE\GitHub Repository\Cookie-Clicker-Aflevering\Cookie Clicker Gruppearbejde\Assets\CookieBillede.png" Stretch="Fill"/>
+            <Image Source="Assets/CookieBillede.png" Stretch="Fill"/>
         </Button>
 
         <!-- Current Cookies Display -->
@@ -73,5 +73,16 @@
                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Margin="0,10,10,0"
                 Click="ShowStrategiTips_Click"/>
+
+
+        <!-- Log Panel -->
+        <ListBox ItemsSource="{Binding UpgradeLog}" 
+         Width="250" 
+         Height="300" 
+         HorizontalAlignment="Right" 
+         VerticalAlignment="Center" 
+         Margin="0,0,10,0"
+         Background="{Binding BackgroundColor}" 
+         Foreground="{Binding TextColor}"/>
     </Grid>
 </Window>

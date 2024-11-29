@@ -4,186 +4,255 @@ using System.Media;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Collections.ObjectModel; 
 
 namespace CookieClicker
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        // Game Variables
-        private int currentCookies;
-        private int totalCookies;
-        private int clickPower = 1;
-        private int clickPowerCost = 5;
-        private int autoClickLevel;
-        private int autoClickCost = 10;
-        private int criticalStrikeLevel;
-        private int criticalStrikeCost = 20;
-        private const int CriticalStrikeMaxLevel = 12;
+        // Spilvariabler
+        private int currentCookies; // Antal nuværende cookies
+        private int totalCookies; // Total antal cookies samlet
+        private int clickPower = 1; // Startværdi for klik-kraft
+        private int clickPowerCost = 5; // Startpris for at opgradere klik-kraft
+        private int autoClickLevel; // Niveau for Auto Click opgradering
+        private int autoClickCost = 10; // Startpris for Auto Click opgradering
+        private int criticalStrikeLevel; // Niveau for Critical Strike opgradering
+        private int criticalStrikeCost = 20; // Startpris for Critical Strike opgradering
+        private const int CriticalStrikeMaxLevel = 12; // Maksimalt niveau for Critical Strike
 
-        // Night Mode Variables
-        private bool isNightMode;
-        private Brush backgroundColor = Brushes.White;
-        private Brush textColor = Brushes.Black;
+        // Night Mode Variabler
+        private bool isNightMode; // Boolean for at angive om Night Mode er aktiveret
+        private Brush backgroundColor = Brushes.White; // Standard baggrundsfarve
+        private Brush textColor = Brushes.Black; // Standard tekstfarve
 
-        // Sound Variables
-        private bool isMuted;
+        // Lyd Variabler
+        private bool isMuted; // Boolean for at indikere om lyd er slået fra
 
-        // Auto Click Timer
-        private DispatcherTimer autoClickTimer;
-        private Random random = new Random();
+        // Timer til Auto Click
+        private DispatcherTimer autoClickTimer; // Timer til at udføre Auto Clicks
+        private Random random = new Random(); // Tilfældighedsgenerator til Critical Strike
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged; // Event til dataopdatering i UI
 
         // Display Properties
         public Brush BackgroundColor
         {
-            get => backgroundColor;
+            get => backgroundColor; // Getter til baggrundsfarve
             set
             {
-                backgroundColor = value;
-                OnPropertyChanged(nameof(BackgroundColor));
+                backgroundColor = value; // Setter til baggrundsfarve
+                OnPropertyChanged(nameof(BackgroundColor)); // Opdatering af UI
             }
         }
 
         public Brush TextColor
         {
-            get => textColor;
+            get => textColor; // Getter til tekstfarve
             set
             {
-                textColor = value;
-                OnPropertyChanged(nameof(TextColor));
+                textColor = value; // Setter til tekstfarve
+                OnPropertyChanged(nameof(TextColor)); // Opdatering af UI
             }
         }
 
         public bool IsMuted
         {
-            get => isMuted;
+            get => isMuted; // Getter til lydstatus
             set
             {
-                isMuted = value;
-                OnPropertyChanged(nameof(IsMuted));
+                isMuted = value; // Setter til lydstatus
+                OnPropertyChanged(nameof(IsMuted)); // Opdatering af UI
             }
         }
 
-        public string CurrentCookiesDisplay => $"Current Cookies: {currentCookies}";
-        public string TotalCookiesDisplay => $"Total Cookies: {totalCookies}";
-        public string ClickPowerButtonText => $"Upgrade Click Power (Cost: {clickPowerCost})";
-        public string AutoClickButtonText => $"Upgrade Auto Click (Cost: {autoClickCost})";
-        public string CriticalStrikeButtonText => $"Upgrade Critical Strike ({criticalStrikeLevel}/{CriticalStrikeMaxLevel}) (Cost: {criticalStrikeCost})";
+        public string CurrentCookiesDisplay => $"Current Cookies: {currentCookies}"; // Display for nuværende cookies
+        public string TotalCookiesDisplay => $"Total Cookies: {totalCookies}"; // Display for totale cookies
+        public string ClickPowerButtonText => $"Upgrade Click Power (Cost: {clickPowerCost})"; // Tekst til klik-kraft opgraderingsknap
+        public string AutoClickButtonText => $"Upgrade Auto Click (Cost: {autoClickCost})"; // Tekst til Auto Click opgraderingsknap
+        public string CriticalStrikeButtonText => $"Upgrade Critical Strike ({criticalStrikeLevel}/{CriticalStrikeMaxLevel}) (Cost: {criticalStrikeCost})"; // Tekst til Critical Strike opgraderingsknap
 
-        public MainWindow()
-        {
-            InitializeComponent();
-            DataContext = this;
-
-            autoClickTimer = new DispatcherTimer();
-            autoClickTimer.Tick += AutoClickTimer_Tick;
-        }
+ 
 
         private void OnPropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); // Udløs PropertyChanged event for UI-opdatering
         }
 
-        // Cookie Button Click
+
+
+
+
+
+
+                     // Håndtering af klik på cookie-knappen
         private void CookieButton_Click(object sender, RoutedEventArgs e)
         {
-            int addedCookies = IsCriticalStrike() ? clickPower * 5 : clickPower;
-            AddCookies(addedCookies);
-            PlaySound("Assets/CoinCollecter.wav");
+            int addedCookies = IsCriticalStrike() ? clickPower * 5 : clickPower; // Tjek for Critical Strike
+            AddCookies(addedCookies); // Tilføj cookies
+            PlaySound("Assets/CoinCollecter.wav"); // Spil klik-lyd
         }
 
         private void AddCookies(int amount)
         {
-            currentCookies += amount;
-            totalCookies += amount;
-            OnPropertyChanged(nameof(CurrentCookiesDisplay));
-            OnPropertyChanged(nameof(TotalCookiesDisplay));
+            currentCookies += amount; // Tilføj til nuværende cookies
+            totalCookies += amount; // Tilføj til totale cookies
+            OnPropertyChanged(nameof(CurrentCookiesDisplay)); // Opdater UI for nuværende cookies
+            OnPropertyChanged(nameof(TotalCookiesDisplay)); // Opdater UI for totale cookies
         }
 
         private bool IsCriticalStrike()
         {
-            if (criticalStrikeLevel == 0) return false;
+            if (criticalStrikeLevel == 0) return false; // Ingen Critical Strike hvis niveau er 0
 
-            int chance = Math.Min(20 + criticalStrikeLevel * 5, 80);
-            return random.Next(0, 100) < chance;
+            int chance = Math.Min(20 + criticalStrikeLevel * 5, 80); // Beregn chance med maks på 80%
+            
+            return random.Next(0, 100) < chance; // Returner true hvis inden for chancegrænse
+            
         }
 
-        // Upgrades
+                        
+
+
+
+
+
+
+
+
+
+                        //Opgradering af Click Power
         private void UpgradeClickPower_Click(object sender, RoutedEventArgs e)
         {
-            if (currentCookies >= clickPowerCost)
+            if (currentCookies >= clickPowerCost) // Tjek om nok cookies til opgradering
             {
-                currentCookies -= clickPowerCost;
-                clickPower++;
-                clickPowerCost *= 2;
+                currentCookies -= clickPowerCost; // Reducer cookies
+                clickPower++; // Øg klik-kraft
+                clickPowerCost *= 2; // Forøg opgraderingsomkostning eksponentielt
 
-                OnPropertyChanged(nameof(ClickPowerButtonText));
-                OnPropertyChanged(nameof(CurrentCookiesDisplay));
-                PlaySound("Assets/Upgrade Explosion.wav");
+                OnPropertyChanged(nameof(ClickPowerButtonText)); // Opdater UI
+                OnPropertyChanged(nameof(CurrentCookiesDisplay)); // Opdater cookies display
+                PlaySound("Assets/Upgrade Explosion.wav"); // Spil opgraderingslyd
+
+
+                // Add log entry
+                UpgradeLog.Insert(0, $"Upgraded Click Power to {clickPower} (Cost: {clickPowerCost / 2})");
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+                    //Auto Clicker Funktion
+
+        public MainWindow()
+        {
+            InitializeComponent(); // Initialiser UI-komponenter
+            DataContext = this; // Sæt DataContext for binding i XAML
+
+            autoClickTimer = new DispatcherTimer(); // Opret en ny DispatcherTimer
+            autoClickTimer.Tick += AutoClickTimer_Tick; // Tilføj event handler for timerens tick
+        }
+
+
+                    //Opgradering af AutoClick
         private void UpgradeAutoClick_Click(object sender, RoutedEventArgs e)
         {
-            if (currentCookies >= autoClickCost)
+            if (currentCookies >= autoClickCost) // Tjek om nok cookies til opgradering
             {
-                currentCookies -= autoClickCost;
-                autoClickLevel++;
-                autoClickCost *= 2;
+                currentCookies -= autoClickCost; // Reducer cookies
+                autoClickLevel++; // Øg Auto Click niveau
+                autoClickCost *= 2; // Forøg omkostning eksponentielt
 
-                OnPropertyChanged(nameof(AutoClickButtonText));
-                OnPropertyChanged(nameof(CurrentCookiesDisplay));
-                UpdateAutoClickTimer();
-                PlaySound("Assets/Upgrade Explosion.wav");
+                OnPropertyChanged(nameof(AutoClickButtonText)); // Opdater UI
+                OnPropertyChanged(nameof(CurrentCookiesDisplay)); // Opdater cookies display
+                UpdateAutoClickTimer(); // Opdater Auto Click timer
+                PlaySound("Assets/Upgrade Explosion.wav"); // Spil opgraderingslyd
+
+
+                // Add log entry
+                UpgradeLog.Insert(0, $"Upgraded Auto Click to Level {autoClickLevel} (Cost: {autoClickCost / 2})");
             }
         }
+
+
+                     private void UpdateAutoClickTimer()
+                        {
+                          int clicksPerSecond = Math.Min((int)Math.Pow(2, autoClickLevel), 100); // Beregn Auto Click pr. sekund med maks på 100
+                         autoClickTimer.Interval = TimeSpan.FromSeconds(1.0 / clicksPerSecond); // Sæt timer-interval
+
+                         if (!autoClickTimer.IsEnabled) autoClickTimer.Start(); // Start timer hvis ikke allerede kørende
+                     }
+
+                              private void AutoClickTimer_Tick(object sender, EventArgs e)
+                              {
+                                 AddCookies(clickPower); // Tilføj cookies baseret på klik-kraft
+                              }
+
+
+
+
+
+
+
+
+
+
+                //Opgradering af Critical Strike chance
 
         private void UpgradeCriticalStrike_Click(object sender, RoutedEventArgs e)
         {
-            if (currentCookies >= criticalStrikeCost && criticalStrikeLevel < CriticalStrikeMaxLevel)
+            if (currentCookies >= criticalStrikeCost && criticalStrikeLevel < CriticalStrikeMaxLevel) // Tjek for nok cookies og niveaugrænse
             {
-                currentCookies -= criticalStrikeCost;
-                criticalStrikeLevel++;
-                criticalStrikeCost *= 2;
+                currentCookies -= criticalStrikeCost; // Reducer cookies
+                criticalStrikeLevel++; // Øg Critical Strike niveau
+                criticalStrikeCost *= 2; // Forøg omkostning eksponentielt
 
-                OnPropertyChanged(nameof(CriticalStrikeButtonText));
-                OnPropertyChanged(nameof(CurrentCookiesDisplay));
-                PlaySound("Assets/Upgrade Explosion.wav");
+                OnPropertyChanged(nameof(CriticalStrikeButtonText)); // Opdater UI
+                OnPropertyChanged(nameof(CurrentCookiesDisplay)); // Opdater cookies display
+                PlaySound("Assets/Upgrade Explosion.wav"); // Spil opgraderingslyd
+
+                // Add log entry
+                UpgradeLog.Insert(0, $"Upgraded Critical Strike to Level {criticalStrikeLevel}/{CriticalStrikeMaxLevel} (Cost: {criticalStrikeCost / 2})");
             }
         }
 
-        private void UpdateAutoClickTimer()
-        {
-            int clicksPerSecond = Math.Min((int)Math.Pow(2, autoClickLevel), 100);
-            autoClickTimer.Interval = TimeSpan.FromSeconds(1.0 / clicksPerSecond);
 
-            if (!autoClickTimer.IsEnabled) autoClickTimer.Start();
-        }
 
-        private void AutoClickTimer_Tick(object sender, EventArgs e)
-        {
-            AddCookies(clickPower);
-        }
 
-        // Night Mode Toggle
+
+
+
+
+
+
+
+
+        // Håndtering af Night Mode
         private void ToggleNightMode_Click(object sender, RoutedEventArgs e)
         {
-            isNightMode = !isNightMode;
-            BackgroundColor = isNightMode ? Brushes.Black : Brushes.White;
-            TextColor = isNightMode ? Brushes.White : Brushes.Black;
+            isNightMode = !isNightMode; // Skift Night Mode status
+            BackgroundColor = isNightMode ? Brushes.Black : Brushes.White; // Skift baggrundsfarve
+            TextColor = isNightMode ? Brushes.White : Brushes.Black; // Skift tekstfarve
         }
 
-        // Sound Management
+        // Håndtering af lyd
         private void PlaySound(string soundPath)
         {
-            if (isMuted) return;
+            if (isMuted) return; // Spil ikke lyd hvis slået fra
 
             try
             {
-                new SoundPlayer(soundPath).Play();
+                new SoundPlayer(soundPath).Play(); // Spil lydfil
             }
-            catch { /* Handle missing sound file */ }
+            catch { /* Håndter fejl hvis fil mangler */ }
         }
 
         // Strategi-tips Button Click
@@ -201,6 +270,12 @@ namespace CookieClicker
                 "Strategi-tips",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+     
         }
+
+        public ObservableCollection<string> UpgradeLog { get; } = new ObservableCollection<string>();
     }
+
+
+
 }
